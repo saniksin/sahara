@@ -38,6 +38,7 @@ class Accounts(Base, AutoRepr):
     finished_parse_sahara_balance = Column(Boolean)
     gobi_desert_social_media = Column(Boolean)
     gobi_desert_twitter_task = Column(Boolean)
+    account_registration_in_DSP = Column(Boolean)
 
     finished = Column(Boolean)
     
@@ -78,5 +79,8 @@ class Accounts(Base, AutoRepr):
         self.finished_parse_sahara_balance = 0
         self.gobi_desert_social_media = False
         self.gobi_desert_twitter_task = False
+
+        # jebroa
+        self.account_registration_in_DSP = False
 
         self.finished = False

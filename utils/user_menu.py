@@ -52,6 +52,7 @@ def sahara_menu() -> str:
             choices=[
                 "Gobi Desert",
                 "Sahara on-chain",
+                "Jebroa",
                 "SaharaAI Parse ShardAmount",
                 "Exit"
             ]
@@ -79,6 +80,31 @@ def gobi_desert_menu() -> str:
             choices=[
                 "Gobi Desert - Daily",
                 "Gobi Desert - Social Media",
+                "Exit"
+            ]
+        )
+    ]
+
+    return inquirer.prompt(question, theme=loadth(theme))['swap_action']
+
+
+def jebroa_desert_menu() -> str:
+    """Меню для Gobi Desert Menu"""
+    theme = {
+        'Question': {
+            'brackets_color': 'bright_yellow'
+        },
+        'List': {
+            'selection_color': 'bright_blue'
+        },
+    }
+
+    question = [
+        inquirer.List(
+            "swap_action",
+            message=colored('Выберите действие для Gobi Desert', 'light_yellow'),
+            choices=[
+                "Account registration in Data Services Platform",
                 "Exit"
             ]
         )

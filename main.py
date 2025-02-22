@@ -9,7 +9,7 @@ from db_api.database import initialize_db
 from utils.adjust_policy import set_windows_event_loop_policy
 from data.config import EVM_PKS, PROXIES, EMAIL_DATA, TWITTER_TOKENS, DISCORD_TOKENS, DISCORD_PROXYS, logger
 from utils.import_info import get_info
-from utils.user_menu import get_action, sahara_menu, discord_menu, galxe_menu, gobi_desert_menu, sahara_onchain_menu
+from utils.user_menu import get_action, sahara_menu, discord_menu, galxe_menu, gobi_desert_menu, sahara_onchain_menu, jebroa_desert_menu
 from db_api.start_import import ImportToDB
 from settings.settings import ASYNC_TASK_IN_SAME_TIME
 from tasks.main import get_start
@@ -83,6 +83,12 @@ def main():
 
                             case "SaharaAI Parse Native Balance":
                                 asyncio.run(get_start(semaphore, "SaharaAI Parse Native Balance"))
+
+                    case "Jebroa":
+                        gobi_desert_choise = jebroa_desert_menu()
+                        match gobi_desert_choise:
+                            case "Account registration in Data Services Platform":
+                                asyncio.run(get_start(semaphore, "Account registration in Data Services Platform"))
 
                     case "SaharaAI Parse ShardAmount":
                         asyncio.run(get_start(semaphore, "SaharaAI Parse ShardAmount"))

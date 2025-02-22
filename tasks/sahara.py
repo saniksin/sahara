@@ -4,6 +4,7 @@ import asyncio
 import secrets
 
 from eth_account.messages import encode_defunct
+from eth_keys import keys
 
 from db_api.database import Accounts
 from data.session import BaseAsyncSession
@@ -137,8 +138,9 @@ class Sahara(Base):
             )
 
             if response.status_code == 200:
-                if '[{"type":"asset","assetID":"1"' in response.text:
+                if '[{"type":"asset","assetID":"1"' or '[{"type":"asset","assetID":"2","amount":"5"}]' in response.text:
                     continue
+                
                 return False, f'[{self.data.id}] | {self.data.evm_address} не смог склеймить задание {task}. Ответ сервера: {response.text}'
             
             elif f"reward of task: {task} has been claimed" in response.text:
@@ -314,4 +316,92 @@ class Sahara(Base):
                     await self.write_to_db()
                 return True
             
+        return False
+    
+    def get_saharalabs_main_headers(self):
+        return {
+            'accept': 'application/json, text/plain, */*',
+            'accept-language': 'en-US,en;q=0.9',
+            'content-type': 'application/json',
+            'origin': 'https://app.saharalabs.ai',
+            'priority': 'u=1, i',
+            'referer': 'https://app.saharalabs.ai/',
+            'sec-ch-ua': f'"Not_A(Brand";v="8", "Chromium";v="{self.version}", "Google Chrome";v="{self.version}"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': f'"{self.platform}"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': self.data.user_agent,
+        }
+    
+    async def get_saharalabs_login_msg(self):
+
+        json_data = {
+            'address': self.data.evm_address,
+            'chainId': '0x04c7e1',
+        }
+
+        response = await self.async_session.post(
+            'https://app.saharalabs.ai/v1/auth/generate-message', 
+            headers=self.get_saharalabs_main_headers(), 
+            json=json_data
+        )
+
+        if response.status_code == 200:
+            answer = response.json()
+            if answer.get('success'):
+                return True, answer
+
+        logger.error(f'[{self.data.id}] | {self.data.evm_address} | Не смог получить get_saharalabs_login_msg, код ответа: {response.status_code} | msg: {response.text}')
+        return False, ''
+
+    async def login_saharalabs(self, message):
+        
+        message_encoded = encode_defunct(text=message)
+        signed_message = self.eth_client.account.sign_message(message_encoded)
+        
+        public_key = keys.PrivateKey(bytes.fromhex(get_private_key(self.data))).public_key
+
+        json_data = {
+            'message': message,
+            'signature': signed_message.signature.hex(),
+            'pubkey': str(public_key),
+            'role': 7,
+            'walletType': 'io.metamask',
+        }
+
+        response = await self.async_session.post('https://app.saharalabs.ai/v1/auth/login', headers=self.get_saharalabs_main_headers(), json=json_data)
+        if response.status_code == 200:
+            answer = response.json()
+            if answer.get('success'):
+                self.saharalabs_token = answer.get('data', {}).get('token', '')
+                if self.saharalabs_token:
+                    return True
+        logger.error(f'[{self.data.id}] | {self.data.evm_address} | Не смог сделать login_saharalabs, код ответа: {response.status_code} | msg: {response.text}')
+        return False
+
+    @Base.retry
+    async def start_account_registration_in_dsp(self):
+        status, msg = await self.get_saharalabs_login_msg()
+        if not status:
+            return False
+        
+        message = msg.get('data', {}).get('message', '')
+        if not msg:
+            logger.error(f'[{self.data.id}] | {self.data.evm_address} | Не смог получить msg start_account_registration_in_dsp, возможно изменился формат. Текущий msg: {msg}')
+            return False
+
+        status = await self.login_saharalabs(message)
+        if not status:
+            return False
+        
+        status = await self.claim(task_list=['2001'])
+        if status:
+            self.data.account_registration_in_DSP = True
+            async with tasks_lock:
+                await self.write_to_db()
+            logger.success(f'[{self.data.id}] | {self.data.evm_address} | успешно сделал start_account_registration_in_dsp')
+            return True
+        
         return False

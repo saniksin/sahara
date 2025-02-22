@@ -64,6 +64,11 @@ async def get_accounts(
             Accounts.sahara_balance > 0,
             Accounts.finished == False
         )
+    elif quest in {"Account registration in Data Services Platform"}:
+        query = select(Accounts).where(
+            Accounts.account_registration_in_DSP == False,
+            Accounts.finished == False
+        )
 
     else:
         query = select(Accounts)   

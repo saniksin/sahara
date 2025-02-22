@@ -100,6 +100,16 @@ async def migrate():
         except OperationalError:
             pass
 
+        try:
+            await session.execute(
+                text("""
+                ALTER TABLE accounts
+                ADD COLUMN account_registration_in_DSP BOOLEAN DEFAULT 0;
+            """)
+            )
+        except OperationalError:
+            pass
+
         await session.commit()
         await session.close()
 
