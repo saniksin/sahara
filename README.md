@@ -2,6 +2,9 @@
 
 Cофт для автоматизации задач **Galxe + SaharaAI**.
 
+## 🎥 Видеообзор настройки и работы
+[тык](https://youtu.be/qYgi4YacC_E)
+
 ## 📢 Контакты
 
 - Мой Telegram канал: [@cryptosaniksin](https://t.me/cryptosaniksin)
