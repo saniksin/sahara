@@ -1,0 +1,16 @@
+loguru==0.7.3
+aiosqlite==0.20.0
+sqlalchemy==2.0.36
+inquirer==3.4.0
+termcolor==2.4.0
+fake-useragent==2.0.3
+web3==6.14.0
+solders==0.23.0
+solana==0.36.1
+curl_cffi==0.7.4
+tqdm==4.67.1
+python-dotenv==1.0.0
+cryptography==44.0.0
+setuptools==75.8.0
+Faker==22.4.0
+pytz==2023.3.post1

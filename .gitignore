@@ -1,0 +1,24 @@
+# accounts
+import/
+evm.txt
+proxys.txt
+twitter_tokens.txt
+user_agent.txt
+platfrom.txt
+email_data.txt
+
+# status
+status/
+accounts.db
+log.txt
+
+# виртуальное окружение
+.env
+
+.idea
+.vscode
+
+__pycache__/
+*.pyc
+.git_team
+test.py
