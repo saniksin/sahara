@@ -360,14 +360,17 @@ class Sahara(Base):
         
         message_encoded = encode_defunct(text=message)
         signed_message = self.eth_client.account.sign_message(message_encoded)
-        
-        public_key = keys.PrivateKey(bytes.fromhex(get_private_key(self.data))).public_key
 
+        private_key = get_private_key(self.data)
+        if private_key.startswith('0x'):
+            private_key = private_key[2:]
+        
+        public_key = keys.PrivateKey(bytes.fromhex(private_key)).public_key
         json_data = {
             'message': message,
-            'signature': signed_message.signature.hex(),
             'pubkey': str(public_key),
             'role': 7,
+            'signature': signed_message.signature.hex(),
             'walletType': 'io.metamask',
         }
 
