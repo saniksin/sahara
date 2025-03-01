@@ -250,9 +250,14 @@ class Sahara(Base):
         headers = self.get_main_headers()
         headers['authorization'] = f'Bearer {auth_token}'
 
+        json_data = {
+            'timestamp': str(int(time.time() * 1000)),
+        }
+
         response = await self.async_session.post(
             'https://legends.saharalabs.ai/api/v1/user/info', 
-            headers=headers
+            headers=headers,
+            json=json_data
         )
         if response.status_code == 200:
             return True, response.json().get('shardAmount', 0)
