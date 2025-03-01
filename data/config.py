@@ -38,7 +38,7 @@ IMPORTANT_FILES = [EVM_PKS, PROXIES, EMAIL_DATA, TWITTER_TOKENS, DISCORD_TOKENS,
 # Кол-во выполненных асинхронных задач, блокировщий задач asyncio
 completed_tasks = [0]
 remaining_tasks = [0]
-tasks_lock = asyncio.Lock()
+tasks_lock = asyncio.Semaphore(1)
 
 CIPHER_SUITE = []
 

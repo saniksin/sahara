@@ -1,3 +1,4 @@
+import time
 import random
 import uuid
 import asyncio
@@ -61,6 +62,7 @@ class Sahara(Base):
         
         json_data = {
             'address': self.data.evm_address.lower(),
+            'timestamp': str(int(time.time() * 1000)),
         }
 
         response = await self.async_session.post(
@@ -93,6 +95,7 @@ class Sahara(Base):
             'sig': signed_message.signature.hex(),
             'walletUUID': self.get_random_request_id(),
             'walletName': 'MetaMask',
+            'timestamp': str(int(time.time() * 1000)),
         }
 
         if USE_REF_LINK:
@@ -120,6 +123,7 @@ class Sahara(Base):
 
             json_data = {
                 'taskID': task,
+                'timestamp': str(int(time.time() * 1000)),
             }
 
             response = await self.async_session.post(
@@ -130,6 +134,11 @@ class Sahara(Base):
 
             # СЛИП для прогрузки!!!
             await asyncio.sleep(10)
+
+            json_data = {
+                'taskID': task,
+                'timestamp': str(int(time.time() * 1000)),
+            }
 
             response = await self.async_session.post(
                 'https://legends.saharalabs.ai/api/v1/task/claim', 
