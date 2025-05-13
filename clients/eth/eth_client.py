@@ -62,6 +62,11 @@ class EthClient:
         base_fee = (await self.w3.eth.fee_history(1, "latest"))["baseFeePerGas"][-1]
         max_fee_per_gas = base_fee + max_priority_fee_per_gas
 
+        multiplier = random.uniform(1.0, 1.2)  # от 100% до 120%
+        max_fee_per_gas = await self.w3.eth.gas_price
+        max_fee_per_gas = int(max_fee_per_gas * multiplier)
+        +п
+
         tx = {
             "type": self.network.tx_type,
             "chainId": self.network.chain_id,
