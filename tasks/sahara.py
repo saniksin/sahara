@@ -526,17 +526,17 @@ class Sahara(Base):
                 sahara_points = next((int(item["amount"]) for item in data["allocation_breakdown"] if item["name"] == "Sahara Points Allocation"), 0)
                 shard_allocation = next((int(item["amount"]) for item in data["allocation_breakdown"] if item["name"] == "Shard Allocation"), 0)
 
-                self.data.allocation_breakdown = TokenAmount(sahara_points + shard_allocation, decimals=18, wei=True).Ether
+                self.data.allocation_breakdown = float(TokenAmount(sahara_points + shard_allocation, decimals=18, wei=True).Ether)
                 
                 # Стадии
                 stages = data.get("stages", [])
-                self.data.stage_1 = int(stages[0]["amount"]) if len(stages) > 0 and stages[0].get("amount") else 0
-                self.data.stage_2 = int(stages[1]["amount"]) if len(stages) > 1 and stages[1].get("amount") else 0
-                self.data.stage_3 = int(stages[2]["amount"]) if len(stages) > 2 and stages[2].get("amount") else 0
-                self.data.stage_4 = int(stages[3]["amount"]) if len(stages) > 3 and stages[3].get("amount") else 0
-                self.data.stage_5 = int(stages[4]["amount"]) if len(stages) > 4 and stages[4].get("amount") else 0
-                self.data.stage_6 = int(stages[5]["amount"]) if len(stages) > 5 and stages[5].get("amount") else 0
-                self.data.stage_7 = int(stages[6]["amount"]) if len(stages) > 6 and stages[6].get("amount") else 0
+                for i in range(7):
+                    if i < len(stages) and stages[i].get("amount"):
+                        amount_wei = int(stages[i]["amount"])
+                        amount_token = float(TokenAmount(amount_wei, decimals=18, wei=True).Ether)
+                    else:
+                        amount_token = 0.0
+                    setattr(self.data, f"stage_{i + 1}", amount_token)
 
                 logger.success(f'[{self.data.id}] | {self.data.evm_address} | успешно спарсил airdrop info. Airdrop: {self.data.allocation_breakdown} SAHARA')
             else:
