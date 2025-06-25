@@ -54,6 +54,7 @@ def sahara_menu() -> str:
                 "Sahara on-chain",
                 "Jebroa",
                 "SaharaAI Parse ShardAmount",
+                "SaharaAI Parse Airdrop",
                 "Exit"
             ]
         )

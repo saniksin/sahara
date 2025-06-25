@@ -70,6 +70,12 @@ async def get_accounts(
             Accounts.finished == False
         )
 
+    elif quest in {"SaharaAI Parse Airdrop"}:
+        query = select(Accounts).where(
+            Accounts.airdrop_checked == False,
+            Accounts.finished == False
+        )
+
     else:
         query = select(Accounts)   
     return await db.all(query)

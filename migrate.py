@@ -110,6 +110,106 @@ async def migrate():
         except OperationalError:
             pass
 
+        try:
+            await session.execute(
+                text("""
+                ALTER TABLE accounts
+                ADD COLUMN airdrop_checked BOOLEAN DEFAULT 0;
+            """)
+            )
+        except OperationalError:
+            pass
+
+        try:
+            await session.execute(
+                text("""
+                ALTER TABLE accounts
+                ADD COLUMN airdrop_eligible BOOLEAN DEFAULT 0;
+            """)
+            )
+        except OperationalError:
+            pass
+
+        try:
+            await session.execute(
+                text("""
+                ALTER TABLE accounts
+                ADD COLUMN allocation_breakdown INTEGER DEFAULT 0;
+            """)
+            )
+        except OperationalError:
+            pass
+
+        try:
+            await session.execute(
+                text("""
+                ALTER TABLE accounts
+                ADD COLUMN stage_1 INTEGER DEFAULT 0;
+            """)
+            )
+        except OperationalError:
+            pass
+
+        try:
+            await session.execute(
+                text("""
+                ALTER TABLE accounts
+                ADD COLUMN stage_2 INTEGER DEFAULT 0;
+            """)
+            )
+        except OperationalError:
+            pass
+
+        try:
+            await session.execute(
+                text("""
+                ALTER TABLE accounts
+                ADD COLUMN stage_3 INTEGER DEFAULT 0;
+            """)
+            )
+        except OperationalError:
+            pass
+
+        try:
+            await session.execute(
+                text("""
+                ALTER TABLE accounts
+                ADD COLUMN stage_4 INTEGER DEFAULT 0;
+            """)
+            )
+        except OperationalError:
+            pass
+
+        try:
+            await session.execute(
+                text("""
+                ALTER TABLE accounts
+                ADD COLUMN stage_5 INTEGER DEFAULT 0;
+            """)
+            )
+        except OperationalError:
+            pass
+
+        try:
+            await session.execute(
+                text("""
+                ALTER TABLE accounts
+                ADD COLUMN stage_6 INTEGER DEFAULT 0;
+            """)
+            )
+        except OperationalError:
+            pass
+
+        try:
+            await session.execute(
+                text("""
+                ALTER TABLE accounts
+                ADD COLUMN stage_7 INTEGER DEFAULT 0;
+            """)
+            )
+        except OperationalError:
+            pass
+
         await session.commit()
         await session.close()
 

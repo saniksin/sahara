@@ -130,6 +130,10 @@ async def start_task(account_data, quest):
         elif quest in {"Account registration in Data Services Platform"}:
             async with Sahara(data=account_data, network=Networks.SaharaAI) as sahara:
                 return await sahara.start_account_registration_in_dsp()
+            
+        elif quest in {"SaharaAI Parse Airdrop"}:
+            async with Sahara(data=account_data, network=Networks.SaharaAI) as sahara:
+                return await sahara.parse_airdrop()
 
     else:
         discord = DiscordInvite(account_data, quest)

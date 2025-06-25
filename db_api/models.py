@@ -41,6 +41,18 @@ class Accounts(Base, AutoRepr):
     account_registration_in_DSP = Column(Boolean)
 
     finished = Column(Boolean)
+
+    # airdrop
+    airdrop_checked = Column(Boolean, default=False)
+    airdrop_eligible = Column(Boolean, default=False)
+    allocation_breakdown = Column(Integer, default=0)
+    stage_1 = Column(Integer, default=0)
+    stage_2 = Column(Integer, default=0)
+    stage_3 = Column(Integer, default=0)
+    stage_4 = Column(Integer, default=0)
+    stage_5 = Column(Integer, default=0)
+    stage_6 = Column(Integer, default=0)
+    stage_7 = Column(Integer, default=0)
     
 
     def __init__(
@@ -84,3 +96,15 @@ class Accounts(Base, AutoRepr):
         self.account_registration_in_DSP = False
 
         self.finished = False
+
+        # airdrop
+        self.airdrop_checked = False
+        self.airdrop_eligible = False
+        self.allocation_breakdown = 0
+        self.stage_1 = 0
+        self.stage_2 = 0
+        self.stage_3 = 0
+        self.stage_4 = 0
+        self.stage_5 = 0
+        self.stage_6 = 0
+        self.stage_7 = 0

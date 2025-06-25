@@ -18,6 +18,9 @@ from utils.prepere_captcha import get_hcaptcha_solution
 from datetime import datetime, timezone
 from data.models import TokenAmount, Networks
 from tasks.captcha.capsolver_turnstile import CapsolverTurnstile
+
+import secrets
+from datetime import datetime, timedelta, timezone
                       
 
 class Sahara(Base):
@@ -422,3 +425,134 @@ class Sahara(Base):
             return True
         
         return False
+    
+    @staticmethod
+    def generate_nonce(length=17):
+        alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        return ''.join(secrets.choice(alphabet) for _ in range(length))
+    
+    @staticmethod
+    def iso_timestamp(dt: datetime) -> str:
+        return dt.replace(tzinfo=timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+
+    async def airdrop_sing_in(self):
+
+        now = datetime.now(timezone.utc)
+        issued_at = self.iso_timestamp(now)
+        expiration_time = self.iso_timestamp(now + timedelta(days=7))
+
+        headers = {
+            'accept': '*/*',
+            'accept-language': 'en-US,en;q=0.9',
+            'content-type': 'application/json',
+            'origin': 'https://knowledgedrop.saharaai.com',
+            'priority': 'u=1, i',
+            'sec-ch-ua': f'"Not_A(Brand";v="8", "Chromium";v="{self.version}", "Google Chrome";v="{self.version}"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': f'"{self.platform}"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'cross-site',
+            'user-agent': self.data.user_agent,
+        }
+
+        message = (
+            'knowledgedrop.saharaai.com wants you to sign in with your Ethereum account:\n'
+            f'{self.data.evm_address}\n\n'
+            'Sign in with Ethereum to the app.\n\n'
+            'URI: https://knowledgedrop.saharaai.com\n'
+            'Version: 1\n'
+            'Chain ID: 1\n'
+            #'Nonce: lZ1tAP8i8RT0ZGCpS\n'
+            f'Nonce: {self.generate_nonce()}\n'            
+            # 'Issued At: 2025-06-25T09:02:50.158Z\n'
+            # 'Expiration Time: 2025-07-02T09:02:50.157Z'
+            f"Issued At: {issued_at}\n"
+            f"Expiration Time: {expiration_time}"
+        )
+
+        message_encoded = encode_defunct(text=message)
+        signed_message = self.eth_client.account.sign_message(message_encoded)
+
+        json_data = {
+            'address': self.data.evm_address,
+            'signature': signed_message.signature.hex(),
+            'message': message,
+            'public_key': '',
+        }  
+
+
+        response = await self.async_session.post('https://earndrop.prd.galaxy.eco/sign_in', headers=headers, json=json_data)
+
+        if response.status_code == 200:
+            answer = response.json()
+            if answer.get('token'):
+                token = answer.get('token', {})
+                if token:
+                    return True, token
+        logger.error(f'[{self.data.id}] | {self.data.evm_address} | Не смог сделать airdrop_sing_in, код ответа: {response.status_code} | msg: {response.text}')
+        return False, ''
+        
+    async def airdrop_info(self, token):
+        headers = {
+            'accept': '*/*',
+            'accept-language': 'en-US,en;q=0.9',
+            'authorization': token,
+            'origin': 'https://knowledgedrop.saharaai.com',
+            'priority': 'u=1, i',
+            'sec-ch-ua': f'"Not_A(Brand";v="8", "Chromium";v="{self.version}", "Google Chrome";v="{self.version}"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': f'"{self.platform}"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'cross-site',
+            'user-agent': self.data.user_agent,
+        }
+
+        #response = await self.async_session.get('https://earndrop.prd.galaxy.eco/sahara/info', headers=headers)
+        response = await self.async_session.get('https://earndrop.prd.galaxy.eco/sahara/info', headers=headers)
+
+        if response.status_code == 200:
+            answer = response.json()
+            data = answer.get("data", {})
+
+            self.data.airdrop_checked = True
+
+            # Проверка eligibility
+            if data.get("allocation_breakdown"):
+                self.data.airdrop_eligible = True
+
+                # Сумма allocation_breakdown по названиям
+                sahara_points = next((int(item["amount"]) for item in data["allocation_breakdown"] if item["name"] == "Sahara Points Allocation"), 0)
+                shard_allocation = next((int(item["amount"]) for item in data["allocation_breakdown"] if item["name"] == "Shard Allocation"), 0)
+
+                self.data.allocation_breakdown = TokenAmount(sahara_points + shard_allocation, decimals=18, wei=True).Ether
+                
+                # Стадии
+                stages = data.get("stages", [])
+                self.data.stage_1 = int(stages[0]["amount"]) if len(stages) > 0 and stages[0].get("amount") else 0
+                self.data.stage_2 = int(stages[1]["amount"]) if len(stages) > 1 and stages[1].get("amount") else 0
+                self.data.stage_3 = int(stages[2]["amount"]) if len(stages) > 2 and stages[2].get("amount") else 0
+                self.data.stage_4 = int(stages[3]["amount"]) if len(stages) > 3 and stages[3].get("amount") else 0
+                self.data.stage_5 = int(stages[4]["amount"]) if len(stages) > 4 and stages[4].get("amount") else 0
+                self.data.stage_6 = int(stages[5]["amount"]) if len(stages) > 5 and stages[5].get("amount") else 0
+                self.data.stage_7 = int(stages[6]["amount"]) if len(stages) > 6 and stages[6].get("amount") else 0
+
+                logger.success(f'[{self.data.id}] | {self.data.evm_address} | успешно спарсил airdrop info. Airdrop: {self.data.allocation_breakdown} SAHARA')
+            else:
+                self.data.airdrop_eligible = False
+                
+                logger.warning(f'[{self.data.id}] | {self.data.evm_address} | не eligible для airdrop.')
+
+            async with tasks_lock:
+                await self.write_to_db()
+
+            return True
+
+        logger.error(f'[{self.data.id}] | {self.data.evm_address} | Не смог сделать запрос на airdrop_info, код ответа: {response.status_code} | msg: {response.text}')
+        raise False
+
+    async def parse_airdrop(self):
+        status, token = await self.airdrop_sing_in()
+        if status:
+            return await self.airdrop_info(token)

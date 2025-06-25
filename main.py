@@ -93,6 +93,9 @@ def main():
                     case "SaharaAI Parse ShardAmount":
                         asyncio.run(get_start(semaphore, "SaharaAI Parse ShardAmount"))
 
+                    case "SaharaAI Parse Airdrop":
+                        asyncio.run(get_start(semaphore, "SaharaAI Parse Airdrop"))
+
             case "Galxe":
                 galxe_choice = galxe_menu()
                 match galxe_choice:
